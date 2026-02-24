@@ -31,6 +31,8 @@ let hasWeatherLoaded = false;
 const weatherIconEl = document.getElementById("weatherIcon");
 
 const forecastContainer = document.getElementById("forecastContainer");
+const forecastLoading = document.getElementById("forecastLoading");
+const forecastError = document.getElementById("forecastError");
 
 
 // Search button click
@@ -112,27 +114,37 @@ async function fetchWeatherByCoords(lat, lon) {
 
 
 //5 day forecast function
-
 async function getFiveDayForecast(city) {
   try {
+    forecastError.classList.add("hidden");
+    forecastLoading.classList.remove("hidden");
+    forecastContainer.innerHTML = "";
+
     const response = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch forecast data.");
+      throw new Error("Unable to load forecast data.");
     }
 
     const data = await response.json();
     processForecastData(data);
 
   } catch (error) {
-    console.error(error.message);
+    forecastError.textContent = error.message;
+    forecastError.classList.remove("hidden");
+  } finally {
+    forecastLoading.classList.add("hidden");
   }
 }
-
 //forecast function
 function processForecastData(data) {
+    if (!data.list || data.list.length === 0) {
+  forecastError.textContent = "No forecast data available.";
+  forecastError.classList.remove("hidden");
+  return;
+}
   forecastContainer.innerHTML = "";
 
   const dailyData = data.list.filter(item =>

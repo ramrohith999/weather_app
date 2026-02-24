@@ -100,6 +100,14 @@
       <!-- 5 Day Forecast -->
       <div>
         <h2 class="text-xl font-semibold mb-4 text-gray-700">5-Day Forecast</h2>
+        <div id="forecastLoading" class="hidden text-center text-gray-500 mb-4">
+          Loading forecast...
+        </div>
+
+        <div
+          id="forecastError"
+          class="hidden text-center text-red-500 mb-4"
+        ></div>
         <div
           id="forecastContainer"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-4"
