@@ -14,6 +14,8 @@ const windEl = document.getElementById("wind");
 
 const locationButton = document.getElementById("locationBtn");
 
+const suggestionsList = document.getElementById("suggestions");
+
 // Search button click
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -60,6 +62,7 @@ async function getWeatherByCity(city) {
 
     const data = await response.json();
     displayWeather(data);
+    saveCity(data.name);
   } catch (error) {
     showError(error.message);
   } finally {
@@ -119,4 +122,53 @@ function showLoading(isLoading) {
   } else {
     loading.classList.add("hidden");
   }
+}
+// Save city
+function saveCity(city) {
+  let cities = JSON.parse(localStorage.getItem("recentCities")) || [];
+
+  city = city.trim();
+
+  if (!cities.includes(city)) {
+    cities.unshift(city);
+  }
+
+  if (cities.length > 5) {
+    cities = cities.slice(0, 5);
+  }
+
+  localStorage.setItem("recentCities", JSON.stringify(cities));
+}
+
+// Show suggestions when input focused
+cityInput.addEventListener("focus", showSuggestions);
+
+// Hide when clicking outside
+document.addEventListener("click", (e) => {
+  if (!cityInput.contains(e.target)) {
+    suggestionsList.classList.add("hidden");
+  }
+});
+
+function showSuggestions() {
+  const cities = JSON.parse(localStorage.getItem("recentCities")) || [];
+
+  if (cities.length === 0) return;
+
+  suggestionsList.innerHTML = "";
+  suggestionsList.classList.remove("hidden");
+
+  cities.forEach(city => {
+    const li = document.createElement("li");
+    li.textContent = city;
+    li.className = "px-4 py-2 hover:bg-sky-100 cursor-pointer";
+
+    li.addEventListener("click", () => {
+      cityInput.value = city;
+      suggestionsList.classList.add("hidden");
+      getWeatherByCity(city);
+    });
+
+    suggestionsList.appendChild(li);
+  });
 }
