@@ -12,6 +12,8 @@ const descriptionEl = document.getElementById("description");
 const humidityEl = document.getElementById("humidity");
 const windEl = document.getElementById("wind");
 
+const locationButton = document.getElementById("locationBtn");
+
 // Search button click
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -24,6 +26,24 @@ searchBtn.addEventListener("click", () => {
   getWeatherByCity(city);
 });
 
+//get current location 
+
+locationButton.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    showError("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      fetchWeatherByCoords(latitude, longitude);
+    },
+    () => {
+      showError("Unable to retrieve your location.");
+    }
+  );
+});
 // Fetch weather by city
 async function getWeatherByCity(city) {
   try {
@@ -40,6 +60,30 @@ async function getWeatherByCity(city) {
 
     const data = await response.json();
     displayWeather(data);
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+//function to fetch by coordinates 
+async function fetchWeatherByCoords(lat, lon) {
+  try {
+    showLoading(true);
+    hideError();
+
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch location weather.");
+    }
+
+    const data = await response.json();
+    displayWeather(data);
+
   } catch (error) {
     showError(error.message);
   } finally {
