@@ -16,6 +16,10 @@ const locationButton = document.getElementById("locationBtn");
 
 const suggestionsList = document.getElementById("suggestions");
 
+const unitToggleBtn = document.getElementById("unitToggle");
+let currentTempCelsius = null;
+let isCelsius = true;
+
 // Search button click
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -98,13 +102,17 @@ async function fetchWeatherByCoords(lat, lon) {
 function displayWeather(data) {
   todayWeather.classList.remove("hidden");
 
+  currentTempCelsius = data.main.temp;
+  isCelsius = true;
+
   cityNameEl.textContent = data.name;
-  temperatureEl.textContent = `${Math.round(data.main.temp)}°C`;
+  temperatureEl.textContent = `${Math.round(currentTempCelsius)}°C`;
   descriptionEl.textContent = data.weather[0].description;
   humidityEl.textContent = `Humidity: ${data.main.humidity}%`;
   windEl.textContent = `Wind Speed: ${data.wind.speed} m/s`;
-}
 
+  unitToggleBtn.textContent = "Switch to °F";
+}
 // Error display
 function showError(message) {
   errorBox.textContent = message;
@@ -172,3 +180,19 @@ function showSuggestions() {
     suggestionsList.appendChild(li);
   });
 }
+
+//c anf F tggle button
+unitToggleBtn.addEventListener("click", () => {
+  if (currentTempCelsius === null) return;
+
+  if (isCelsius) {
+    const tempF = (currentTempCelsius * 9) / 5 + 32;
+    temperatureEl.textContent = `${Math.round(tempF)}°F`;
+    unitToggleBtn.textContent = "Switch to °C";
+    isCelsius = false;
+  } else {
+    temperatureEl.textContent = `${Math.round(currentTempCelsius)}°C`;
+    unitToggleBtn.textContent = "Switch to °F";
+    isCelsius = true;
+  }
+});
