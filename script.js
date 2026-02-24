@@ -22,6 +22,15 @@ let isCelsius = true;
 
 const tempAlert = document.getElementById("tempAlert");
 
+const appBody = document.getElementById("appBody");
+const weatherPattern = document.getElementById("weatherPattern");
+
+
+let hasWeatherLoaded = false;
+
+const weatherIconEl = document.getElementById("weatherIcon");
+
+
 // Search button click
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -34,7 +43,7 @@ searchBtn.addEventListener("click", () => {
   getWeatherByCity(city);
 });
 
-//get current location 
+//get current location
 
 locationButton.addEventListener("click", () => {
   if (!navigator.geolocation) {
@@ -49,7 +58,7 @@ locationButton.addEventListener("click", () => {
     },
     () => {
       showError("Unable to retrieve your location.");
-    }
+    },
   );
 });
 // Fetch weather by city
@@ -76,14 +85,14 @@ async function getWeatherByCity(city) {
   }
 }
 
-//function to fetch by coordinates 
+//function to fetch by coordinates
 async function fetchWeatherByCoords(lat, lon) {
   try {
     showLoading(true);
     hideError();
 
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`,
     );
 
     if (!response.ok) {
@@ -92,7 +101,6 @@ async function fetchWeatherByCoords(lat, lon) {
 
     const data = await response.json();
     displayWeather(data);
-
   } catch (error) {
     showError(error.message);
   } finally {
@@ -102,20 +110,23 @@ async function fetchWeatherByCoords(lat, lon) {
 
 // Display weather
 function displayWeather(data) {
+  const iconCode = data.weather[0].icon;
+  weatherIconEl.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  hasWeatherLoaded = true;
   todayWeather.classList.remove("hidden");
 
   currentTempCelsius = data.main.temp;
   isCelsius = true;
   // Extreme temperature check
-if (currentTempCelsius > 40) {
-  tempAlert.textContent = "⚠ Extreme Heat Warning! Stay Hydrated.";
-  tempAlert.classList.remove("hidden");
-} else if (currentTempCelsius < 5) {
-  tempAlert.textContent = "❄ Extreme Cold Alert! Stay Warm.";
-  tempAlert.classList.remove("hidden");
-} else {
-  tempAlert.classList.add("hidden");
-}
+  if (currentTempCelsius > 29) {
+    tempAlert.textContent = "⚠ Extreme Heat Warning! Stay Hydrated.";
+    tempAlert.classList.remove("hidden");
+  } else if (currentTempCelsius < 5) {
+    tempAlert.textContent = "❄ Extreme Cold Alert! Stay Warm.";
+    tempAlert.classList.remove("hidden");
+  } else {
+    tempAlert.classList.add("hidden");
+  }
 
   cityNameEl.textContent = data.name;
   temperatureEl.textContent = `${Math.round(currentTempCelsius)}°C`;
@@ -124,6 +135,7 @@ if (currentTempCelsius > 40) {
   windEl.textContent = `Wind Speed: ${data.wind.speed} m/s`;
 
   unitToggleBtn.textContent = "Switch to °F";
+  updateBackground(data.weather[0].main);
 }
 // Error display
 function showError(message) {
@@ -165,7 +177,10 @@ cityInput.addEventListener("focus", showSuggestions);
 
 // Hide when clicking outside
 document.addEventListener("click", (e) => {
-  if (!cityInput.contains(e.target)) {
+  if (
+    !cityInput.contains(e.target) &&
+    !suggestionsList.contains(e.target)
+  ) {
     suggestionsList.classList.add("hidden");
   }
 });
@@ -178,7 +193,7 @@ function showSuggestions() {
   suggestionsList.innerHTML = "";
   suggestionsList.classList.remove("hidden");
 
-  cities.forEach(city => {
+  cities.forEach((city) => {
     const li = document.createElement("li");
     li.textContent = city;
     li.className = "px-4 py-2 hover:bg-sky-100 cursor-pointer";
@@ -208,3 +223,35 @@ unitToggleBtn.addEventListener("click", () => {
     isCelsius = true;
   }
 });
+
+//function for dynamic backgrounds
+function updateBackground(condition) {
+  if (!weatherPattern) {
+    console.log("weatherPattern not found");
+    return;
+  }
+
+  const weather = condition.toLowerCase();
+
+  weatherPattern.innerHTML = "";
+  weatherPattern.classList.remove("hidden");
+
+  let symbol = "☀️";
+
+  if (weather.includes("rain")) symbol = "🌧️";
+  else if (weather.includes("snow")) symbol = "❄️";
+  else if (weather.includes("cloud")) symbol = "☁️";
+  else if (weather.includes("thunder")) symbol = "⛈️";
+
+  for (let i = 0; i < 20; i++) {
+    const span = document.createElement("span");
+    span.textContent = symbol;
+    span.style.position = "absolute";
+    span.style.left = Math.random() * 100 + "%";
+    span.style.top = Math.random() * 100 + "%";
+    span.style.opacity = "0.8";
+    span.style.fontSize = "22px";
+
+    weatherPattern.appendChild(span);
+  }
+}
