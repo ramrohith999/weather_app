@@ -30,6 +30,8 @@ let hasWeatherLoaded = false;
 
 const weatherIconEl = document.getElementById("weatherIcon");
 
+const forecastContainer = document.getElementById("forecastContainer");
+
 
 // Search button click
 searchBtn.addEventListener("click", () => {
@@ -108,6 +110,55 @@ async function fetchWeatherByCoords(lat, lon) {
   }
 }
 
+
+//5 day forecast function
+
+async function getFiveDayForecast(city) {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch forecast data.");
+    }
+
+    const data = await response.json();
+    processForecastData(data);
+
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
+//forecast function
+function processForecastData(data) {
+  forecastContainer.innerHTML = "";
+
+  const dailyData = data.list.filter(item =>
+    item.dt_txt.includes("12:00:00")
+  );
+
+  dailyData.slice(0, 5).forEach(day => {
+    const date = new Date(day.dt_txt);
+    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+    const card = document.createElement("div");
+    card.className =
+      "bg-white/90 rounded-xl p-4 text-center shadow-md";
+
+    card.innerHTML = `
+      <p class="font-semibold">${dayName}</p>
+      <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" class="mx-auto w-12 h-12" />
+      <p class="text-indigo-600 font-bold">${Math.round(day.main.temp)}°C</p>
+      <p class="text-sm text-gray-600">💧 ${day.main.humidity}%</p>
+      <p class="text-sm text-gray-600">🌬 ${day.wind.speed} m/s</p>
+    `;
+
+    forecastContainer.appendChild(card);
+  });
+}
+
 // Display weather
 function displayWeather(data) {
   const iconCode = data.weather[0].icon;
@@ -136,6 +187,7 @@ function displayWeather(data) {
 
   unitToggleBtn.textContent = "Switch to °F";
   updateBackground(data.weather[0].main);
+  getFiveDayForecast(data.name);
 }
 // Error display
 function showError(message) {
@@ -154,6 +206,7 @@ function showLoading(isLoading) {
   } else {
     loading.classList.add("hidden");
   }
+ 
 }
 // Save city
 function saveCity(city) {
@@ -255,3 +308,4 @@ function updateBackground(condition) {
     weatherPattern.appendChild(span);
   }
 }
+
