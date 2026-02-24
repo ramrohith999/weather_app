@@ -20,6 +20,8 @@ const unitToggleBtn = document.getElementById("unitToggle");
 let currentTempCelsius = null;
 let isCelsius = true;
 
+const tempAlert = document.getElementById("tempAlert");
+
 // Search button click
 searchBtn.addEventListener("click", () => {
   const city = cityInput.value.trim();
@@ -104,6 +106,16 @@ function displayWeather(data) {
 
   currentTempCelsius = data.main.temp;
   isCelsius = true;
+  // Extreme temperature check
+if (currentTempCelsius > 40) {
+  tempAlert.textContent = "⚠ Extreme Heat Warning! Stay Hydrated.";
+  tempAlert.classList.remove("hidden");
+} else if (currentTempCelsius < 5) {
+  tempAlert.textContent = "❄ Extreme Cold Alert! Stay Warm.";
+  tempAlert.classList.remove("hidden");
+} else {
+  tempAlert.classList.add("hidden");
+}
 
   cityNameEl.textContent = data.name;
   temperatureEl.textContent = `${Math.round(currentTempCelsius)}°C`;
