@@ -141,24 +141,44 @@ function processForecastData(data) {
 
   dailyData.slice(0, 5).forEach(day => {
     const date = new Date(day.dt_txt);
-    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+    const dayName = date.toLocaleDateString("en-US", {
+      weekday: "short"
+    });
+
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric"
+    });
 
     const card = document.createElement("div");
     card.className =
-      "bg-white/90 rounded-xl p-4 text-center shadow-md";
+      "bg-gradient-to-br from-white to-sky-50 rounded-2xl p-5 shadow-lg hover:scale-105 transition-transform duration-300 border border-sky-200";
 
     card.innerHTML = `
-      <p class="font-semibold">${dayName}</p>
-      <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" class="mx-auto w-12 h-12" />
-      <p class="text-indigo-600 font-bold">${Math.round(day.main.temp)}°C</p>
-      <p class="text-sm text-gray-600">💧 ${day.main.humidity}%</p>
-      <p class="text-sm text-gray-600">🌬 ${day.wind.speed} m/s</p>
+      <div class="flex flex-col items-center gap-2">
+        <p class="text-sky-700 font-semibold text-lg">${dayName}</p>
+        <p class="text-xs text-gray-500">${formattedDate}</p>
+
+        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png"
+             class="w-14 h-14" />
+
+        <p class="text-indigo-600 font-bold text-2xl">
+          ${Math.round(day.main.temp)}°C
+        </p>
+
+        <div class="w-full border-t border-sky-100 my-2"></div>
+
+        <div class="flex justify-between w-full text-sm text-gray-600">
+          <span>💧 ${day.main.humidity}%</span>
+          <span>🌬 ${day.wind.speed} m/s</span>
+        </div>
+      </div>
     `;
 
     forecastContainer.appendChild(card);
   });
 }
-
 // Display weather
 function displayWeather(data) {
   const iconCode = data.weather[0].icon;
